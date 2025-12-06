@@ -1,0 +1,26 @@
+version: '3.8'
+
+services:
+  photo_portrait_bot:
+    build: .
+    container_name: photo_portrait_bot
+    env_file:
+      - .env
+    networks:
+      - shared_network
+    restart: unless-stopped
+    volumes:
+      - ./app:/app/app
+      - ./static:/app/static
+      - ./logs:/app/logs
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+        labels: "bot=photo-portrait-bot"
+
+networks:
+  shared_network:
+    external: true
+    name: bots_shared_network

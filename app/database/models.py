@@ -45,7 +45,7 @@ class User(Base):
     # Referral relationships
     referrer: Mapped[Optional["User"]] = relationship("User", remote_side=[id], foreign_keys=[referred_by_id], back_populates="referrals")
     referrals: Mapped[List["User"]] = relationship("User", foreign_keys=[referred_by_id], back_populates="referrer", cascade="all, delete-orphan")
-    referral_rewards: Mapped[List["ReferralReward"]] = relationship("ReferralReward", foreign_keys="[ReferralReward.user_id]", back_populates="user", cascade="all, delete-orphan")
+    referral_rewards: Mapped[List["ReferralReward"]] = relationship("ReferralReward", back_populates="user", cascade="all, delete-orphan")
 
     def __repr__(self):
         return f"<User(id={self.id}, telegram_id={self.telegram_id}, username={self.username})>"

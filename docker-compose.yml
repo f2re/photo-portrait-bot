@@ -1,20 +1,9 @@
 version: '3.8'
 
 services:
-  #   bot:
-  #   build: .
-  #  env_file: .env
-  #    depends_on:
-  #    -bg_removal_bot
-  #    - redis
-  #  restart: unless-stopped
-  #  volumes:
-  #    - ./app:/app/app
-  #    - ./static:/app/static
-  
-  bg_removal_bot:
+  photo_portrait_bot:
     build: .
-    container_name: bg_removal_bot
+    container_name: photo_portrait_bot
     depends_on:
       - redis
     environment:
@@ -22,7 +11,7 @@ services:
     env_file:
       - .env
     networks:
-      - postgres_timecapsule_network
+      - bot_network
     restart: unless-stopped
     volumes:
       - ./app:/app/app
@@ -30,10 +19,13 @@ services:
 
   redis:
     image: redis:7-alpine
+    container_name: photo_portrait_bot_redis
     restart: unless-stopped
+    networks:
+      - bot_network
     ports:
       - "127.0.0.1:6379:6379"
 
 networks:
-  postgres_timecapsule_network:
-    external: true
+  bot_network:
+    driver: bridge

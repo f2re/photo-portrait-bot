@@ -1,160 +1,67 @@
-# 📸 AI Photo Portrait Bot
+# Photo Portrait Bot
 
-![Project Status](https://img.shields.io/badge/status-active-success.svg)
-![Python](https://img.shields.io/badge/python-3.11-blue.svg)
-![Aiogram](https://img.shields.io/badge/aiogram-3.x-blue.svg)
-![Docker](https://img.shields.io/badge/docker-compose-blue.svg)
-![License](https://img.shields.io/badge/license-MIT-green.svg)
+Telegram bot for generating professional passport/ID photos from selfies using AI.
 
-**Photo Portrait Bot** — это современный Telegram-бот для генерации и обработки портретов с использованием искусственного интеллекта (через OpenRouter/Gemini). Проект представляет собой полноценное коммерческое решение с интеграцией платежей, системой поддержки, аналитикой и реферальной программой.
+## Features
 
-Проект полностью оптимизирован для развертывания на **Telegram Bots Platform**.
+- 📸 **Automatic Passport Photo Generation**: Converts casual portraits into professional ID photos.
+- 🤖 **AI-Powered**: Uses advanced AI (OpenRouter/Gemini) for perfect background removal and image enhancement.
+- 📄 **Document Support**: Supports sending photos as documents for lossless quality.
+- 📦 **Batch Processing**: Send multiple photos as an album to process them all at once.
+- 💳 **Integrated Payments**: Purchase image packages via YooKassa.
+- 👥 **Referral Program**: Invite friends and earn free processing credits.
+- 📊 **Analytics**: Tracks usage and sales (Yandex Metrika integration).
 
----
+## Tech Stack
 
-## ✨ Возможности
+- **Python 3.11+**
+- **aiogram 3.x**
+- **PostgreSQL** (SQLAlchemy + Alembic)
+- **Redis** (for caching/FSM if configured)
+- **OpenRouter API** (AI Image Processing)
+- **YooKassa** (Payments)
 
-| Функционал | Описание |
-| :--- | :--- |
-| **🤖 AI Генерация** | Интеграция с передовыми моделями (Gemini/OpenRouter) для обработки изображений. |
-| **💳 Платежная система** | Полная интеграция с **ЮKassa** (через API 3.0). Поддержка различных тарифов. |
-| **📊 Аналитика** | Встроенная поддержка **Yandex Metrika** и детальное UTM-отслеживание трафика. |
-| **👥 Реферальная система** | Многоуровневая система вознаграждений за приглашение пользователей. |
-| **🎫 Техподдержка** | Встроенная тикет-система для общения пользователей с администраторами внутри бота. |
-| **🐳 Docker-Ready** | Полная контейнеризация для быстрого развертывания и масштабирования. |
-| **🔒 Безопасность** | Асинхронная работа с БД (PostgreSQL), миграции Alembic, валидация данных Pydantic. |
+## Setup
 
----
+1. **Clone the repository**
+2. **Configure Environment**:
+   Copy `.env.example` to `.env` and fill in your credentials:
+   ```bash
+   cp .env.example .env
+   nano .env
+   ```
+   Required:
+   - `BOT_TOKEN`
+   - `OPENROUTER_API_KEY`
+   - `DATABASE_URL`
+   - `ADMIN_IDS`
 
-## 🛠 Технологический стек
+3. **Run with Docker (Recommended)**:
+   ```bash
+   docker-compose up -d
+   ```
 
-Проект построен на современном стеке технологий Python:
+4. **Run Locally**:
+   ```bash
+   # Install dependencies
+   pip install -r requirements.txt
+   
+   # Run migrations
+   alembic upgrade head
+   
+   # Start bot
+   python -m app.bot
+   ```
 
-*   **Framework:** [Aiogram 3.x](https://docs.aiogram.dev/) (асинхронный фреймворк для Telegram API)
-*   **Database:** PostgreSQL + [SQLAlchemy 2.0](https://www.sqlalchemy.org/) (Async)
-*   **Migrations:** [Alembic](https://alembic.sqlalchemy.org/)
-*   **Web Server:** Aiohttp (для обработки Webhook и callback-ов платежей)
-*   **Containerization:** Docker & Docker Compose
-*   **Config:** Pydantic Settings
+## Project Structure
 
----
+- `app/` - Main application code
+  - `bot.py` - Entry point
+  - `handlers/` - Telegram update handlers
+  - `services/` - External services (AI, Payments)
+  - `database/` - DB models and CRUD
+- `alembic/` - Database migrations
 
-## 💰 Тарифные планы
+## License
 
-Бот поддерживает гибкую настройку пакетов услуг через переменные окружения. Конфигурация по умолчанию:
-
-| Тариф | Изображений | Стоимость (RUB) |
-| :--- | :---: | :---: |
-| **Starter** | 10 | 299 ₽ |
-| **Standard** | 25 | 599 ₽ |
-| **Professional** | 50 | 999 ₽ |
-| **Business** | 100 | 1799 ₽ |
-
-> *Новым пользователям предоставляется 3 бесплатных генерации.*
-
----
-
-## 🚀 Установка и запуск
-
-### Предварительные требования
-
-*   Docker и Docker Compose
-*   Токен бота от [@BotFather](https://t.me/BotFather)
-*   PostgreSQL (или использование контейнера из `docker-compose`)
-*   Аккаунт ЮKassa (для приема платежей)
-*   API Key от OpenRouter
-
-### 1. Клонирование репозитория
-
-```bash
-git clone https://github.com/your-username/photo-portrait-bot.git
-cd photo-portrait-bot
-```
-
-### 2. Настройка окружения
-
-Создайте файл `.env` на основе примера:
-
-```bash
-cp .env.example .env
-```
-
-Отредактируйте `.env`, заполнив необходимые ключи:
-
-<details>
-<summary>📋 Нажмите, чтобы открыть описание переменных</summary>
-
-| Переменная | Описание |
-| :--- | :--- |
-| `BOT_TOKEN` | Токен вашего бота из BotFather |
-| `BOT_USERNAME` | Юзернейм бота (без @) |
-| `ADMIN_IDS` | ID администраторов через запятую |
-| `DATABASE_URL` | Строка подключения к БД (AsyncPG) |
-| `PORT` | Порт для веб-сервера (Webhook) |
-| `WEBHOOK_URL` | Публичный URL вашего сервера (https) |
-| `OPENROUTER_API_KEY` | Ключ API для генерации изображений |
-| `YOOKASSA_SHOP_ID` | Shop ID магазина в ЮKassa |
-| `YOOKASSA_SECRET_KEY` | Секретный ключ API ЮKassa |
-
-</details>
-
-### 3. Локальный запуск (Docker)
-
-```bash
-docker-compose up -d --build
-```
-
-Бот автоматически применит миграции базы данных при запуске.
-
----
-
-## 📂 Структура проекта
-
-```graphql
-photo-portrait-bot/
-├── 📂 alembic/             # Миграции базы данных
-├── 📂 app/
-│   ├── 📂 database/        # Модели (SQLAlchemy) и CRUD операции
-│   ├── 📂 handlers/        # Обработчики команд и сообщений (Aiogram routers)
-│   ├── 📂 keyboards/       # Inline и Reply клавиатуры
-│   ├── 📂 middlewares/     # Middleware (DB сессии, логирование)
-│   ├── 📂 services/        # Внешние интеграции (OpenRouter, etc.)
-│   └── config.py           # Конфигурация (Pydantic)
-├── bot.py                  # Точка входа (Entry point)
-├── docker-compose.yml      # Конфигурация Docker сервисов
-├── Dockerfile              # Инструкции сборки образа
-└── requirements.txt        # Зависимости Python
-```
-
----
-
-## 📊 Мониторинг и Аналитика
-
-Бот спроектирован для работы в экосистеме, где логи собираются через **Loki/Promtail**.
-В `docker-compose.yml` настроен драйвер логирования `json-file` с меткой `bot=photo-portrait-bot`.
-
-**Метрики:**
-*   Бот отправляет события в **Yandex Metrika** (Start, Purchase, Generation).
-*   Внутренняя статистика доступна администраторам через БД (таблицы `orders`, `users`, `utm_events`).
-
----
-
-## 🤝 Вклад в проект (Contributing)
-
-1.  Fork it!
-2.  Создайте ветку для вашей фичи (`git checkout -b feature/amazing-feature`)
-3.  Закоммитьте изменения (`git commit -m 'Add some amazing feature'`)
-4.  Запушьте ветку (`git push origin feature/amazing-feature`)
-5.  Откройте Pull Request
-
----
-
-## 📝 Лицензия
-
-Этот проект распространяется под лицензией MIT. Подробнее см. файл `LICENSE`.
-
----
-
-<div align="center">
-  <sub>Built with ❤️ by Meteo Team</sub>
-</div>
+MIT

@@ -504,11 +504,12 @@ async def process_image_handler(message: Message, state: FSMContext):
 
                 async with db.get_session() as session:
                     is_first, user_id = await update_user_stats(session, message.from_user.id)
-                    await metrika_service.track_event(
-                        session=session,
-                        user_id=user_id,
-                        event_type="first_image"
-                    )
+                    if is_first:
+                        await metrika_service.track_event(
+                            session=session,
+                            user_id=user_id,
+                            event_type="first_image"
+                        )
                     await save_processed_image(
                         session,
                         message.from_user.id,
@@ -615,6 +616,12 @@ async def process_document_handler(message: Message, state: FSMContext):
 
                 async with db.get_session() as session:
                     is_first, user_id = await update_user_stats(session, message.from_user.id)
+                    if is_first:
+                        await metrika_service.track_event(
+                            session=session,
+                            user_id=user_id,
+                            event_type="first_image"
+                        )
                     await save_processed_image(
                         session,
                         message.from_user.id,

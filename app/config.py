@@ -16,10 +16,6 @@ class Settings(BaseSettings):
     DB_USER: str = "bgremove_user"
     DB_PASSWORD: str = ""
 
-    # Bria API (for transparent backgrounds)
-    BRIA_API_KEY: str
-    BRIA_API_URL: str = "https://engine.prod.bria-api.com/v2"
-
     # OpenRouter API (for white backgrounds)
     OPENROUTER_API_KEY: str
     OPENROUTER_MODEL: Optional[str] = "google/gemini-2.5-flash-image-preview"

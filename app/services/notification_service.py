@@ -222,7 +222,7 @@ class NotificationService:
             bot: Bot instance
             user_telegram_id: User's telegram ID
             username: User's username
-            service_name: Name of the service that failed (e.g., Bria, OpenRouter)
+            service_name: Name of the service that failed (e.g., OpenRouter)
             error_message: The detailed error message
         """
         try:

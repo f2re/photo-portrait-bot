@@ -24,8 +24,21 @@ def upgrade() -> None:
     inspector = inspect(conn)
     tables = inspector.get_table_names()
 
+    # Helper function to handle table creation safely
+    def safe_create_table(table_name, create_func):
+        if table_name in tables:
+            return
+        
+        try:
+            create_func()
+        except sa.exc.ProgrammingError as e:
+            if "already exists" in str(e):
+                print(f"Table {table_name} already exists, skipping creation.")
+            else:
+                raise
+
     # Create users table
-    if 'users' not in tables:
+    def create_users():
         op.create_table(
             'users',
             sa.Column('id', sa.Integer(), nullable=False),
@@ -39,9 +52,10 @@ def upgrade() -> None:
             sa.PrimaryKeyConstraint('id'),
             sa.UniqueConstraint('telegram_id')
         )
+    safe_create_table('users', create_users)
 
     # Create packages table
-    if 'packages' not in tables:
+    def create_packages():
         op.create_table(
             'packages',
             sa.Column('id', sa.Integer(), nullable=False),
@@ -60,9 +74,10 @@ def upgrade() -> None:
             ('10 изображений', 10, 350.00, true),
             ('50 изображений', 50, 1500.00, true)
         """)
+    safe_create_table('packages', create_packages)
 
     # Create orders table
-    if 'orders' not in tables:
+    def create_orders():
         op.create_table(
             'orders',
             sa.Column('id', sa.Integer(), nullable=False),
@@ -78,9 +93,10 @@ def upgrade() -> None:
             sa.PrimaryKeyConstraint('id'),
             sa.UniqueConstraint('robokassa_invoice_id')
         )
+    safe_create_table('orders', create_orders)
 
     # Create processed_images table
-    if 'processed_images' not in tables:
+    def create_processed_images():
         op.create_table(
             'processed_images',
             sa.Column('id', sa.Integer(), nullable=False),
@@ -95,9 +111,10 @@ def upgrade() -> None:
             sa.ForeignKeyConstraint(['order_id'], ['orders.id'], ),
             sa.PrimaryKeyConstraint('id')
         )
+    safe_create_table('processed_images', create_processed_images)
 
     # Create support_tickets table
-    if 'support_tickets' not in tables:
+    def create_support_tickets():
         op.create_table(
             'support_tickets',
             sa.Column('id', sa.Integer(), nullable=False),
@@ -112,9 +129,10 @@ def upgrade() -> None:
             sa.ForeignKeyConstraint(['order_id'], ['orders.id'], ),
             sa.PrimaryKeyConstraint('id')
         )
+    safe_create_table('support_tickets', create_support_tickets)
 
     # Create admins table
-    if 'admins' not in tables:
+    def create_admins():
         op.create_table(
             'admins',
             sa.Column('id', sa.Integer(), nullable=False),
@@ -125,6 +143,7 @@ def upgrade() -> None:
             sa.PrimaryKeyConstraint('id'),
             sa.UniqueConstraint('telegram_id')
         )
+    safe_create_table('admins', create_admins)
 
 
 def downgrade() -> None:

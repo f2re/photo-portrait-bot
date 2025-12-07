@@ -15,6 +15,7 @@ services:
     restart: unless-stopped
     volumes:
       - ./app:/app/app
+      - ./alembic:/app/alembic
       - ./static:/app/static
 
   redis:

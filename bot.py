@@ -33,7 +33,9 @@ async def main():
 
     # Initialize database
     logger.info("Initializing database...")
-    init_db(settings.database_url)
+    database = init_db(settings.database_url)
+    logger.info("Creating database tables if they don't exist...")
+    await database.create_tables()
 
     # Delete webhook to ensure polling works
     logger.info("Removing webhook and dropping pending updates...")

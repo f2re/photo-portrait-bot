@@ -10,8 +10,8 @@ from app.config import settings
 logger = logging.getLogger(__name__)
 
 
-# Passport photo generation prompt
-PASSPORT_PHOTO_PROMPT = """# Role: Professional Portrait Photographer
+# Business portrait generation prompt
+BUSINESS_PORTRAIT_PROMPT = """# Role: Professional Portrait Photographer
 # Task: Generate an ultra-realistic 8k corporate headshot based on an input reference image.
 # Compliance: Ensure subject consent regarding likeness usage (Civil Code of the RF, Art. 152.1).
 
@@ -50,7 +50,7 @@ PASSPORT_PHOTO_PROMPT = """# Role: Professional Portrait Photographer
 
 
 class OpenRouterService:
-    """Service for generating official passport photos using OpenRouter API"""
+    """Service for generating professional business portraits using OpenRouter API"""
 
     def __init__(self):
         self.api_key = settings.OPENROUTER_API_KEY
@@ -58,9 +58,9 @@ class OpenRouterService:
         self.model = settings.OPENROUTER_MODEL or "google/gemini-2.5-flash-image-preview"
         self.base_url = "https://openrouter.ai/api/v1/chat/completions"
 
-    async def generate_passport_photo(self, image_bytes: bytes) -> Dict:
+    async def generate_business_portrait(self, image_bytes: bytes) -> Dict:
         """
-        Generate official passport photo from portrait using OpenRouter API
+        Generate professional business portrait from input image using OpenRouter API
 
         Args:
             image_bytes: Original portrait image bytes
@@ -92,7 +92,7 @@ class OpenRouterService:
                 "messages": [
                     {
                         "role": "system",
-                        "content": PASSPORT_PHOTO_PROMPT
+                        "content": BUSINESS_PORTRAIT_PROMPT
                     },
                     {
                         "role": "user",
@@ -121,7 +121,7 @@ class OpenRouterService:
                 "presence_penalty": 0,
             }
 
-            logger.info(f"Sending passport photo request to OpenRouter API with model: {self.model}")
+            logger.info(f"Sending business portrait request to OpenRouter API with model: {self.model}")
 
             async with aiohttp.ClientSession() as session:
                 async with session.post(self.base_url, json=payload, headers=headers, timeout=aiohttp.ClientTimeout(total=60)) as response:
@@ -183,7 +183,7 @@ class OpenRouterService:
                                 # Validate it's a valid image
                                 Image.open(BytesIO(processed_image_bytes))
 
-                                logger.info("Successfully generated passport photo from API response")
+                                logger.info("Successfully generated business portrait from API response")
 
                                 return {
                                     "success": True,
@@ -230,7 +230,7 @@ class OpenRouterService:
                         }
 
         except Exception as e:
-            logger.error(f"Error in generate_passport_photo: {str(e)}", exc_info=True)
+            logger.error(f"Error in generate_business_portrait: {str(e)}", exc_info=True)
             return {
                 "success": False,
                 "image_bytes": None,

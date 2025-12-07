@@ -56,11 +56,11 @@ async def build_welcome_message(first_name: str, balance: dict) -> str:
     welcome_text = (
         f"👋 Привет, {first_name}!\n\n"
         f"{balance_text}\n"
-        "🤖 <b>AI Фото на документы</b>\n\n"
-        "Я превращу твое селфи в профессиональное фото на документы (паспорт, виза, права).\n\n"
+        "🤖 <b>HeadshotPro AI — Бизнес-портрет</b>\n\n"
+        "Я превращу твое обычное фото в профессиональный студийный портрет уровня Forbes и LinkedIn.\n\n"
         "<b>Как пользоваться:</b>\n"
         "• Просто отправь свое фото\n"
-        "• Я автоматически обрежу, заменю фон на белый и улучшу качество\n\n"
+        "• Я одену тебя в деловой костюм, настрою свет и сделаю идеальный фон\n\n"
     )
 
     # Add contextual call-to-action based on balance
@@ -323,17 +323,18 @@ async def info_how_it_works_handler(callback: CallbackQuery):
     text = (
         "❓ <b>Как это работает?</b>\n\n"
         "📸 <b>Процесс очень прост:</b>\n\n"
-        "1️⃣ <b>Сделайте селфи</b> или выберите портретное фото из галереи.\n"
-        "   • Смотрите прямо в камеру\n"
-        "   • Лицо должно быть хорошо освещено\n"
-        "   • Нейтральное выражение лица\n\n"
+        "1️⃣ <b>Сделайте селфи</b> или выберите фото из галереи.\n"
+        "   • Лицо должно быть хорошо видно\n"
+        "   • Смотрите в камеру\n"
+        "   • Можно домашнее фото в любой одежде\n\n"
         "2️⃣ <b>Отправьте боту</b>\n"
-        "   • Как фото (сжатое) или как документ (без потери качества)\n\n"
+        "   • Я сохраню ваши черты лица на 100%\n"
+        "   • Одену вас в стильный деловой костюм\n"
+        "   • Помещу на профессиональный студийный фон\n\n"
         "3️⃣ <b>Получите результат</b>\n"
-        "   • Через 5-10 секунд бот пришлет готовое фото на документы\n"
-        "   • С белым фоном и правильной композицией\n\n"
-        "💡 <b>Поддерживаемые форматы:</b> JPG, PNG, WebP.\n\n"
-        "✨ Технология использует передовые нейросети для идеального результата!"
+        "   • Через 30 секунд вы получите портрет уровня топ-менеджера\n"
+        "   • Идеально для LinkedIn, резюме и корпоративных сайтов\n\n"
+        "✨ Используется технология Gemini 2.5 Flash Image для фотореалистичного качества!"
     )
     await callback.message.edit_text(text, parse_mode="HTML", reply_markup=get_back_keyboard())
     await callback.answer()
@@ -478,7 +479,7 @@ async def process_image_handler(message: Message, state: FSMContext):
                     return
                 balance_reserved = True
 
-            status_msg = await message.answer("⏳ Генерирую фото на документы...")
+            status_msg = await message.answer("⏳ Создаю ваш бизнес-портрет (это займет около 30 сек)...")
 
             photo = message.photo[-1]
             file = await message.bot.get_file(photo.file_id)
@@ -498,7 +499,7 @@ async def process_image_handler(message: Message, state: FSMContext):
             if result['success']:
                 output_file = BufferedInputFile(
                     result['image_bytes'],
-                    filename="passport_photo.png"
+                    filename="business_portrait.png"
                 )
 
                 async with db.get_session() as session:
@@ -513,13 +514,13 @@ async def process_image_handler(message: Message, state: FSMContext):
                         message.from_user.id,
                         photo.file_id,
                         "processed",
-                        "OpenRouter Passport Photo",
+                        "OpenRouter Business Portrait",
                         is_free_image
                     )
                     new_balance = await get_user_balance(session, message.from_user.id)
 
                 balance_info = f"📊 Осталось: {new_balance['total']}"
-                caption = f"✅ Готово! Фото на документы создано.\n\n{balance_info}"
+                caption = f"✅ Готово! Ваш бизнес-портрет создан.\n\n{balance_info}"
 
                 if new_balance['total'] == 0:
                     await message.answer_photo(output_file, caption=caption)
@@ -585,7 +586,7 @@ async def process_document_handler(message: Message, state: FSMContext):
                     return
                 balance_reserved = True
 
-            status_msg = await message.answer("⏳ Генерирую фото на документы (HQ)...")
+            status_msg = await message.answer("⏳ Создаю ваш бизнес-портрет (HQ)...")
 
             file = await message.bot.get_file(message.document.file_id)
             file_bytes = await message.bot.download_file(file.file_path)
@@ -604,7 +605,7 @@ async def process_document_handler(message: Message, state: FSMContext):
             if result['success']:
                 output_file = BufferedInputFile(
                     result['image_bytes'],
-                    filename=f"passport_{message.document.file_name or 'photo'}.png"
+                    filename=f"business_portrait_{message.document.file_name or 'photo'}.png"
                 )
 
                 async with db.get_session() as session:
@@ -614,12 +615,12 @@ async def process_document_handler(message: Message, state: FSMContext):
                         message.from_user.id,
                         message.document.file_id,
                         "processed",
-                        "OpenRouter Passport Photo HQ",
+                        "OpenRouter Business Portrait HQ",
                         is_free_image
                     )
                     new_balance = await get_user_balance(session, message.from_user.id)
 
-                caption = f"✅ Готово! Фото на документы (HQ).\n\n📊 Осталось: {new_balance['total']}"
+                caption = f"✅ Готово! Бизнес-портрет (HQ).\n\n📊 Осталось: {new_balance['total']}"
                 await message.answer_document(output_file, caption=caption)
                 
                 if status_msg:
@@ -640,7 +641,7 @@ async def process_document_handler(message: Message, state: FSMContext):
         print(f"Error: {e}")
 
 
-@router.message(F.text == "📸 Обработать изображение")
+@router.message(F.text == "📸 Создать бизнес-портрет")
 async def process_image_request_handler(message: Message):
     db = get_db()
     async with db.get_session() as session:
@@ -655,7 +656,7 @@ async def process_image_request_handler(message: Message):
     else:
         await message.answer(
             "📸 <b>Отправьте фото!</b>\n\n"
-            "Я сделаю из него фото на документы.\n"
-            "Смотрите прямо в камеру, нейтральный фон приветствуется.",
+            "Я сделаю из него профессиональный бизнес-портрет.\n"
+            "Смотрите прямо в камеру, желательно при хорошем освещении.",
             parse_mode="HTML"
         )

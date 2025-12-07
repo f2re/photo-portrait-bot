@@ -1,11 +1,11 @@
-# Photo Portrait Bot
+# HeadshotPro AI — Business Portrait Bot
 
-Telegram bot for generating professional passport/ID photos from selfies using AI.
+Telegram bot for generating professional business portraits and corporate headshots from selfies using AI.
 
 ## Features
 
-- 📸 **Automatic Passport Photo Generation**: Converts casual portraits into professional ID photos.
-- 🤖 **AI-Powered**: Uses advanced AI (OpenRouter/Gemini) for perfect background removal and image enhancement.
+- 📸 **Automatic Business Portrait Generation**: Converts casual photos into high-end studio portraits (navy blue suit, studio lighting, charcoal background).
+- 🤖 **AI-Powered**: Uses advanced AI (OpenRouter/Gemini 2.5) for photorealistic results.
 - 📄 **Document Support**: Supports sending photos as documents for lossless quality.
 - 📦 **Batch Processing**: Send multiple photos as an album to process them all at once.
 - 💳 **Integrated Payments**: Purchase image packages via YooKassa.

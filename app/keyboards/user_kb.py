@@ -6,7 +6,7 @@ def get_main_menu() -> ReplyKeyboardMarkup:
     """Get main menu keyboard"""
     keyboard = ReplyKeyboardMarkup(
         keyboard=[
-            [KeyboardButton(text="📸 Обработать изображение")],
+            [KeyboardButton(text="📸 Создать бизнес-портрет")],
             [KeyboardButton(text="💎 Купить пакет"), KeyboardButton(text="📊 Мой баланс")],
             [KeyboardButton(text="👥 Реферальная программа")],
             [KeyboardButton(text="ℹ️ Информация"), KeyboardButton(text="💬 Поддержка")]
@@ -187,7 +187,7 @@ def get_referral_menu(bot_username: str, referral_code: str) -> InlineKeyboardMa
         inline_keyboard=[
             [InlineKeyboardButton(
                 text="📤 Поделиться ссылкой",
-                url=f"https://t.me/share/url?url={referral_link}&text=Попробуй этого бота для удаления фона с изображений! Первые 3 обработки бесплатно!"
+                url=f"https://t.me/share/url?url={referral_link}&text=Создай профессиональный бизнес-портрет за 30 секунд! Первые 3 фото бесплатно!"
             )],
             [InlineKeyboardButton(
                 text="📋 Скопировать ссылку",

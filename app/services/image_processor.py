@@ -61,13 +61,13 @@ class ImageProcessor:
         use_transparent_bg: bool = False  # Kept for compatibility with handler signature, but ignored or used for quality
     ) -> Dict:
         """
-        Process image to generate passport photo
+        Process image to generate business portrait
 
         Args:
             image_bytes: Input image bytes
             bot: Bot instance for sending notifications
             user: User object
-            use_transparent_bg: Ignored in this version (Passport photos usually white bg)
+            use_transparent_bg: Ignored in this version
 
         Returns:
             dict with keys: success (bool), image_bytes (bytes), error (str)
@@ -97,9 +97,9 @@ class ImageProcessor:
                     "error": "Неподдерживаемый формат изображения"
                 }
 
-            # Use OpenRouter for passport photo generation
-            logger.info(f"Using OpenRouter for passport photo generation (user: {user.telegram_id})")
-            result = await self.openrouter_service.generate_passport_photo(image_bytes)
+            # Use OpenRouter for business portrait generation
+            logger.info(f"Using OpenRouter for business portrait generation (user: {user.telegram_id})")
+            result = await self.openrouter_service.generate_business_portrait(image_bytes)
 
             if result["success"]:
                 logger.info(f"Image processing completed successfully for user {user.telegram_id}")

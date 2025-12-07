@@ -1,7 +1,7 @@
 version: '3.8'
 
 services:
-  photo_portrait_bot:
+  bot:
     build: .
     container_name: photo_portrait_bot
     env_file:

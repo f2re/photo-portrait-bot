@@ -8,6 +8,11 @@ class Settings(BaseSettings):
     BOT_USERNAME: str  # Bot username without @ (e.g., "photo_portrait_bot")
     ADMIN_IDS: str
 
+    # Webhook / Server
+    PORT: int = 8000
+    WEBHOOK_URL: str
+    WEBHOOK_PATH: str = "/webhook"
+
     # Database - can use either DATABASE_URL or individual DB_* variables
     DATABASE_URL: Optional[str] = None
     DB_HOST: str = "172.25.0.1"  # Platform gateway IP

@@ -522,11 +522,16 @@ async def process_image_handler(message: Message, state: FSMContext):
                 balance_info = f"📊 Осталось: {new_balance['total']}"
                 caption = f"✅ Готово! Ваш бизнес-портрет создан.\n\n{balance_info}"
 
+                # 1. Send Preview (Photo)
+                preview_file = BufferedInputFile(result['image_bytes'], filename="business_portrait_preview.png")
+                await message.answer_photo(preview_file, caption=caption)
+
+                # 2. Send Document (High Quality)
+                doc_file = BufferedInputFile(result['image_bytes'], filename="business_portrait.png")
+                await message.answer_document(doc_file, caption="📂 Файл без потери качества")
+
                 if new_balance['total'] == 0:
-                    await message.answer_photo(output_file, caption=caption)
                     await message.answer("💎 Купите пакет для продолжения!", reply_markup=get_buy_package_keyboard())
-                else:
-                    await message.answer_photo(output_file, caption=caption)
 
                 if status_msg:
                     await status_msg.delete()
@@ -621,7 +626,17 @@ async def process_document_handler(message: Message, state: FSMContext):
                     new_balance = await get_user_balance(session, message.from_user.id)
 
                 caption = f"✅ Готово! Бизнес-портрет (HQ).\n\n📊 Осталось: {new_balance['total']}"
-                await message.answer_document(output_file, caption=caption)
+                
+                # 1. Send Preview
+                preview_file = BufferedInputFile(result['image_bytes'], filename="business_portrait_preview.png")
+                await message.answer_photo(preview_file, caption=caption)
+
+                # 2. Send Document
+                doc_file = BufferedInputFile(
+                    result['image_bytes'],
+                    filename=f"business_portrait_{message.document.file_name or 'hq'}.png"
+                )
+                await message.answer_document(doc_file, caption="📂 Файл без потери качества")
                 
                 if status_msg:
                     await status_msg.delete()

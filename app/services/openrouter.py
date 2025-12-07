@@ -10,34 +10,43 @@ from app.config import settings
 logger = logging.getLogger(__name__)
 
 
-# Passport photo generation prompt from plan
-PASSPORT_PHOTO_PROMPT = """You are a professional passport photo specialist. Transform this portrait into a perfect
-passport/ID photo that meets international biometric passport photo standards.
+# Passport photo generation prompt
+PASSPORT_PHOTO_PROMPT = """# Role: Professional Portrait Photographer
+# Task: Generate an ultra-realistic 8k corporate headshot based on an input reference image.
+# Compliance: Ensure subject consent regarding likeness usage (Civil Code of the RF, Art. 152.1).
 
-STRICT REQUIREMENTS:
-1. Background: Pure white (#FFFFFF) background - completely uniform, no shadows, no gradients
-2. Lighting: Even, diffused lighting on face - no harsh shadows, no glare
-3. Composition:
-   - Face centered in frame
-   - Head and shoulders visible
-   - Face occupies 70-80% of photo height
-   - Eyes at 2/3 height from bottom
-4. Subject Requirements:
-   - Neutral facial expression (mouth closed)
-   - Eyes open, looking directly at camera
-   - No smile (slight natural expression acceptable)
-   - Face fully visible, no hair covering eyes or face
-   - No glasses glare (if wearing glasses)
-5. Technical Quality:
-   - High resolution and sharp focus
-   - Natural skin tones (no filters, no beauty effects)
-   - Proper exposure (not too bright, not too dark)
-   - No red-eye effect
-   - Professional quality suitable for printing
+## 1. Subject & Identity Preservation
+- **Action:** Analyze the facial structure, landmarks, and skin tone of the source image.
+- **Requirement:** Maintain High Identity Fidelity. The output face must be a recognizable, photorealistic reconstruction of the source subject.
+- **Expression:** Project a confident, approachable, and professional demeanor (slight smile, engaged eyes).
 
-Output format: High-quality passport photo that would be accepted by any government agency
-worldwide (USA, EU, Russia, etc.). This photo must meet ICAO (International Civil Aviation
-Organization) biometric passport photo standards."""
+## 2. Attire & Styling
+- **Suit:** Premium navy blue wool business suit with visible fabric texture. Fit should be tailored and modern.
+- **Shirt:** Crisp white spread-collar dress shirt.
+- **Texture:** Ensure realistic fabric fold physics; avoid "melted" or "painted" looking clothing.
+
+## 3. Environment & Background
+- **Setting:** High-end photography studio.
+- **Backdrop:** Clean, solid charcoal gray (#36454F).
+- **Effect:** Apply a soft vignette (darker edges) to center focus on the subject.
+- **Composition:** Standard head-and-shoulders corporate portrait framing.
+
+## 4. Technical Photography Specs
+- **Camera:** Sony A7III simulation.
+- **Lens:** 85mm f/1.4 GM (Portrait Telephoto).
+- **Depth of Field:** Shallow aperture to create smooth background bokeh, keeping the eyes and face razor-sharp.
+- **Lighting Setup:**
+  - *Key Light:* Soft, diffused Rembrandt-style lighting from the left.
+  - *Rim Light:* Subtle, cool-toned backlighting to separate the navy suit from the dark gray background.
+  - *Fill:* Minimal fill to maintain professional contrast and dimension.
+
+## 5. Quality Boosters
+- **Skin Details:** Render natural skin porosity, micro-texture, and imperfections. Avoid "airbrushed" or "wax figure" skin.
+- **Eyes:** Add realistic corneal reflections (catchlights) from the studio softbox.
+
+## ⛔ Negative Prompt (Exclusions)
+[cartoon, illustration, 3d render, painting, drawing, plastic skin, oversaturated, deformed iris, mutated hands, extra limbs, blur, noise, watermark, text, bad anatomy, distorted features, casual clothing, t-shirt, bright background]
+"""
 
 
 class OpenRouterService:
@@ -90,7 +99,7 @@ class OpenRouterService:
                         "content": [
                             {
                                 "type": "text",
-                                "text": "Transform this portrait into a professional passport photo following all requirements."
+                                "text": "Transform this portrait into a professional portrait photo following all requirements."
                             },
                             {
                                 "type": "image_url",
@@ -101,6 +110,12 @@ class OpenRouterService:
                         ]
                     }
                 ],
+                "extra_body":{
+                    # Ключевой параметр для управления соотношением сторон
+                    "image_config": {
+                        "aspect_ratio": "3:4"  # Портретная ориентация
+                    }
+                },
                 "temperature": 0.2,
                 "top_p": 0.95,
                 "max_tokens": 2048,
@@ -135,12 +150,10 @@ class OpenRouterService:
 
                                 # Handle dict format
                                 if isinstance(image_data, dict):
-                                    # Try different possible keys for the image URL
                                     image_url = (image_data.get('url') or
                                                 image_data.get('data') or
                                                 image_data.get('image_url'))
-
-                                    # If image_url is also a dict, extract the url from it
+                                    
                                     if isinstance(image_url, dict):
                                         image_url = image_url.get('url') or image_url.get('data')
 
@@ -149,7 +162,7 @@ class OpenRouterService:
                                     else:
                                         raise ValueError(f"Unexpected dict format: {image_data.keys()}")
 
-                                # Handle data URL format: data:image/png;base64,xxxx
+                                # Handle data URL format or URL
                                 if isinstance(image_data, str):
                                     if image_data.startswith('data:'):
                                         # Extract base64 part

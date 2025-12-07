@@ -1,26 +1,39 @@
 version: '3.8'
 
 services:
-  bot:
+  #   bot:
+  #   build: .
+  #  env_file: .env
+  #    depends_on:
+  #    -bg_removal_bot
+  #    - redis
+  #  restart: unless-stopped
+  #  volumes:
+  #    - ./app:/app/app
+  #    - ./static:/app/static
+  
+  bg_removal_bot:
     build: .
-    container_name: photo_portrait_bot
+    container_name: bg_removal_bot
+    depends_on:
+      - redis
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
     env_file:
       - .env
     networks:
-      - shared_network
+      - postgres_timecapsule_network
     restart: unless-stopped
     volumes:
       - ./app:/app/app
       - ./static:/app/static
-      - ./logs:/app/logs
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "10m"
-        max-file: "3"
-        labels: "bot=photo-portrait-bot"
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:6379:6379"
 
 networks:
-  shared_network:
+  postgres_timecapsule_network:
     external: true
-    name: bots_shared_network

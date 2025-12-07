@@ -10,7 +10,7 @@ class Settings(BaseSettings):
 
     # Webhook / Server
     PORT: int = 8000
-    WEBHOOK_URL: str
+    WEBHOOK_URL: Optional[str] = None
     WEBHOOK_PATH: str = "/webhook"
 
     # Database - can use either DATABASE_URL or individual DB_* variables

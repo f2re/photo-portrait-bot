@@ -461,7 +461,46 @@ async def admin_utm_menu_callback(callback: CallbackQuery):
 @admin_only
 async def admin_utm_stats_callback(callback: CallbackQuery):
     """Show UTM stats"""
-    await utm_stats_handler(callback.message)
+    db = get_db()
+    async with db.get_session() as session:
+        stats = await get_utm_statistics(session)
+
+    if not stats:
+        await callback.message.edit_text(
+            "📊 <b>UTM Статистика</b>\n\n"
+            "ℹ️ Пока нет данных по UTM-меткам.\n\n"
+            "Пользователи без UTM-меток не учитываются в этой статистике. "
+            "Создайте ссылку с UTM-метками для отслеживания источников трафика.",
+            parse_mode="HTML",
+            reply_markup=get_admin_back()
+        )
+        await callback.answer()
+        return
+
+    text = "📊 <b>Статистика по UTM-меткам</b>\n\n"
+
+    for stat in stats[:10]:  # Show top 10 sources
+        source = stat['utm_source']
+        medium = stat['utm_medium']
+        campaign = stat['utm_campaign']
+        total_users = stat['total_users']
+        paying_users = stat['paying_users']
+        conversion_rate = stat['conversion_rate']
+        revenue = stat['revenue']
+        arpu = stat['arpu']
+
+        text += (
+            f"🔹 <b>{source} / {medium} / {campaign}</b>\n"
+            f"   👥 Пользователей: {total_users}\n"
+            f"   💰 Купили: {paying_users} ({conversion_rate}%)\n"
+            f"   💵 Выручка: {revenue:.2f}₽\n"
+            f"   📈 ARPU: {arpu:.2f}₽\n\n"
+        )
+
+    if len(stats) > 10:
+        text += f"<i>...и еще {len(stats) - 10} источников</i>"
+
+    await callback.message.edit_text(text, parse_mode="HTML", reply_markup=get_admin_back())
     await callback.answer()
 
 
@@ -469,7 +508,29 @@ async def admin_utm_stats_callback(callback: CallbackQuery):
 @admin_only
 async def admin_utm_funnel_callback(callback: CallbackQuery):
     """Show UTM funnel"""
-    await utm_funnel_handler(callback.message)
+    db = get_db()
+    async with db.get_session() as session:
+        funnel = await get_conversion_funnel(session)
+
+    starts = funnel['starts']
+    first_images = funnel['first_images']
+    purchases = funnel['purchases']
+    start_to_first_image_rate = funnel['start_to_first_image_rate']
+    first_image_to_purchase_rate = funnel['first_image_to_purchase_rate']
+    overall_conversion_rate = funnel['overall_conversion_rate']
+
+    text = (
+        "📊 <b>Воронка конверсии (UTM пользователи)</b>\n\n"
+        f"1️⃣ <b>Запуск бота</b>: {starts} чел.\n"
+        f"   ⬇️ {start_to_first_image_rate}%\n\n"
+        f"2️⃣ <b>Первое фото</b>: {first_images} чел.\n"
+        f"   ⬇️ {first_image_to_purchase_rate}%\n\n"
+        f"3️⃣ <b>Покупка</b>: {purchases} чел.\n\n"
+        f"📈 <b>Общая конверсия</b>: {overall_conversion_rate}%\n\n"
+        "<i>Учитываются только пользователи из UTM-источников</i>"
+    )
+
+    await callback.message.edit_text(text, parse_mode="HTML", reply_markup=get_admin_back())
     await callback.answer()
 
 
@@ -477,7 +538,52 @@ async def admin_utm_funnel_callback(callback: CallbackQuery):
 @admin_only
 async def admin_utm_events_callback(callback: CallbackQuery):
     """Show UTM events"""
-    await utm_events_handler(callback.message)
+    db = get_db()
+    async with db.get_session() as session:
+        events = await get_utm_events_summary(session, limit=20)
+
+    if not events:
+        await callback.message.edit_text(
+            "📊 <b>События UTM</b>\n\n"
+            "ℹ️ Нет событий для отображения.",
+            parse_mode="HTML",
+            reply_markup=get_admin_back()
+        )
+        await callback.answer()
+        return
+
+    text = f"📊 <b>Последние {len(events)} событий UTM</b>\n\n"
+
+    for event in events[:20]:  # Show max 20 in message
+        event_type = event['event_type']
+        user_id = event['user_id']
+        username = event['username'] or 'N/A'
+        utm_source = event['utm_source'] or '-'
+        utm_campaign = event['utm_campaign'] or '-'
+        event_value = event['event_value']
+        sent = "✅" if event['sent_to_metrika'] else "⏳"
+
+        # Event emoji
+        event_emoji = {
+            'start': '🚀',
+            'first_image': '📸',
+            'purchase': '💰'
+        }.get(event_type, '📌')
+
+        text += f"{event_emoji} <code>{event_type}</code>"
+
+        if event_value:
+            text += f" ({event_value}₽)"
+
+        text += f"\n   👤 @{username} ({user_id})\n"
+        text += f"   🏷 {utm_source}/{utm_campaign} {sent}\n\n"
+
+    if len(events) > 20:
+        text += f"<i>...и еще {len(events) - 20} событий</i>\n\n"
+
+    text += "\n<i>✅ отправлено в Метрику, ⏳ в очереди</i>"
+
+    await callback.message.edit_text(text, parse_mode="HTML", reply_markup=get_admin_back())
     await callback.answer()
 
 
@@ -485,7 +591,67 @@ async def admin_utm_events_callback(callback: CallbackQuery):
 @admin_only
 async def admin_utm_sync_status_callback(callback: CallbackQuery):
     """Show UTM sync status"""
-    await utm_sync_status_handler(callback.message)
+    db = get_db()
+    async with db.get_session() as session:
+        status = await get_utm_sync_status(session)
+
+    total = status['total_events']
+    sent = status['sent_events']
+    pending = status['pending_events']
+    sync_rate = status['sync_rate']
+    last_sent = status['last_sent_at']
+    last_pending = status['last_pending_at']
+    pending_breakdown = status['pending_breakdown']
+
+    # Format last sent time
+    if last_sent:
+        from datetime import datetime
+        try:
+            last_sent_dt = datetime.fromisoformat(last_sent)
+            last_sent_str = last_sent_dt.strftime("%d.%m.%Y %H:%M:%S")
+        except:
+            last_sent_str = last_sent
+    else:
+        last_sent_str = "Никогда"
+
+    # Build text
+    text = (
+        "📊 <b>Статус синхронизации с Яндекс.Метрикой</b>\n\n"
+        f"📈 <b>Общая статистика:</b>\n"
+        f"   Всего событий: {total}\n"
+        f"   ✅ Отправлено: {sent} ({sync_rate}%)\n"
+        f"   ⏳ В очереди: {pending}\n\n"
+    )
+
+    if pending > 0:
+        text += "📋 <b>В очереди по типам:</b>\n"
+        event_names = {
+            'start': '🚀 Запуски бота',
+            'first_image': '📸 Первые фото',
+            'purchase': '💰 Покупки'
+        }
+        for event_type, count in pending_breakdown.items():
+            event_name = event_names.get(event_type, event_type)
+            text += f"   {event_name}: {count}\n"
+        text += "\n"
+
+    text += (
+        f"🕐 <b>Последняя отправка:</b> {last_sent_str}\n\n"
+        f"⚙️ <b>Интервал загрузки:</b> {metrika_service.is_enabled and 'каждый час' or 'Метрика отключена'}\n\n"
+    )
+
+    if not metrika_service.is_enabled:
+        text += (
+            "⚠️ <b>Яндекс.Метрика отключена</b>\n"
+            "События сохраняются в БД, но не отправляются в Метрику.\n"
+            "Для включения установите YANDEX_METRIKA_COUNTER_ID и YANDEX_METRIKA_TOKEN в .env"
+        )
+    elif pending > 0:
+        text += "✅ Все события отправлены в Метрику!"
+    else:
+        text += "✅ Все события отправлены в Метрику!"
+
+    await callback.message.edit_text(text, parse_mode="HTML", reply_markup=get_admin_back())
     await callback.answer()
 
 

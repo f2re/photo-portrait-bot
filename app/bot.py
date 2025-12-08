@@ -6,6 +6,7 @@ from aiogram.fsm.storage.memory import MemoryStorage
 from app.config import settings
 from app.database import init_db
 from app.handlers import user, admin, payment, support, batch_processing
+from app.middlewares import DbSessionMiddleware
 from app.services.yandex_metrika import periodic_metrika_upload
 
 # Setup logging
@@ -44,6 +45,9 @@ async def main():
     bot = Bot(token=settings.BOT_TOKEN)
     storage = MemoryStorage()
     dp = Dispatcher(storage=storage)
+
+    # Register middlewares
+    dp.update.middleware(DbSessionMiddleware())
 
     # Register routers
     # IMPORTANT: batch_processing must be registered BEFORE user router

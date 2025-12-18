@@ -28,16 +28,26 @@ def get_packages_keyboard(packages: List[dict]) -> InlineKeyboardMarkup:
     """
     buttons = []
 
-    for package in packages:
-        # Calculate discount if applicable
-        base_price = 20  # Base price per image in rubles
-        actual_price_per_image = package['price_rub'] / package['images_count']
-        discount = int((1 - actual_price_per_image / base_price) * 100)
+    # Use first package as base price reference if packages exist
+    if packages:
+        base_price_per_image = packages[0]['price_rub'] / packages[0]['images_count']
+    else:
+        base_price_per_image = 20  # Default fallback
 
-        if discount > 0:
-            text = f"💰 {package['images_count']} изображений - {package['price_rub']}₽ (скидка {discount}%)"
+    for package in packages:
+        actual_price_per_image = package['price_rub'] / package['images_count']
+
+        # For first package, show simple price
+        if package == packages[0]:
+            text = f"⭐️ {package['name']} - {package['images_count']} фото за {int(package['price_rub'])}₽"
         else:
-            text = f"💰 {package['images_count']} изображений - {package['price_rub']}₽"
+            # Calculate savings vs buying individual
+            discount = int((1 - actual_price_per_image / base_price_per_image) * 100)
+
+            if discount > 5:  # Show discount only if meaningful
+                text = f"💎 {package['name']} - {package['images_count']} фото за {int(package['price_rub'])}₽ (выгода {discount}%)"
+            else:
+                text = f"💎 {package['name']} - {package['images_count']} фото за {int(package['price_rub'])}₽"
 
         buttons.append([InlineKeyboardButton(
             text=text,
@@ -173,21 +183,29 @@ def get_contact_skip_keyboard() -> InlineKeyboardMarkup:
 def get_referral_menu(bot_username: str, referral_code: str) -> InlineKeyboardMarkup:
     """
     Get referral program menu keyboard
-    
+
     Args:
         bot_username: Bot's username (without @)
         referral_code: User's referral code
-    
+
     Returns:
         InlineKeyboardMarkup with referral options
     """
+    from app.config import settings
+
     referral_link = f"https://t.me/{bot_username}?start=ref_{referral_code}"
-    
+
+    # Build share text based on FREE_IMAGES_COUNT
+    if settings.FREE_IMAGES_COUNT > 0:
+        share_text = f"Создай профессиональный бизнес-портрет за 30 секунд! Первые {settings.FREE_IMAGES_COUNT} фото бесплатно!"
+    else:
+        share_text = f"Создай профессиональный бизнес-портрет за 30 секунд! Всего от {settings.PACKAGE_1_PRICE}₽!"
+
     keyboard = InlineKeyboardMarkup(
         inline_keyboard=[
             [InlineKeyboardButton(
                 text="📤 Поделиться ссылкой",
-                url=f"https://t.me/share/url?url={referral_link}&text=Создай профессиональный бизнес-портрет за 30 секунд! Первые 3 фото бесплатно!"
+                url=f"https://t.me/share/url?url={referral_link}&text={share_text}"
             )],
             [InlineKeyboardButton(
                 text="📋 Скопировать ссылку",

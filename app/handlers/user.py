@@ -45,17 +45,26 @@ async def build_welcome_message(first_name: str, balance: dict) -> str:
     # Build balance status message
     balance_text = ""
     if balance['free'] > 0 and balance['paid'] > 0:
-        balance_text = f"💫 Баланс: <b>{balance['total']}</b> (🎁 {balance['free']} + 💎 {balance['paid']})\n"
+        balance_text = f"💫 Баланс: <b>{balance['total']}</b> фото (🎁 {balance['free']} + 💎 {balance['paid']})\n"
     elif balance['free'] > 0:
-        balance_text = f"🎁 Доступно: <b>{balance['free']}</b> бесплатных фото\n"
+        balance_text = f"🎁 У вас: <b>{balance['free']}</b> бесплатных фото\n"
     elif balance['paid'] > 0:
-        balance_text = f"💎 Доступно: <b>{balance['paid']}</b> оплаченных фото\n"
+        balance_text = f"💎 У вас: <b>{balance['paid']}</b> фото\n"
     else:
-        balance_text = "⚠️ Бесплатные фото закончились! Купите пакет.\n"
+        # When balance is 0, emphasize affordability
+        if settings.FREE_IMAGES_COUNT > 0:
+            balance_text = "⚠️ Бесплатные фото закончились!\n"
+        else:
+            balance_text = ""
 
     welcome_text = (
         f"👋 Привет, {first_name}!\n\n"
-        f"{balance_text}\n"
+    )
+
+    if balance_text:
+        welcome_text += f"{balance_text}\n"
+
+    welcome_text += (
         "🤖 <b>HeadshotPro AI — Бизнес-портрет</b>\n\n"
         "Я превращу твое обычное фото в профессиональный студийный портрет уровня Forbes и LinkedIn.\n\n"
         "<b>Как пользоваться:</b>\n"
@@ -65,7 +74,9 @@ async def build_welcome_message(first_name: str, balance: dict) -> str:
 
     # Add contextual call-to-action based on balance
     if balance['total'] == 0:
-        welcome_text += "🎯 Купите пакет, чтобы начать работу!"
+        # Get first package info for the CTA
+        welcome_text += f"💎 <b>Начните всего за {settings.PACKAGE_1_PRICE}₽!</b>\n"
+        welcome_text += f"Получите классный портрет люксери-уровня по цене чашки кофе ☕️"
     else:
         welcome_text += "✨ Отправляйте фото!"
 
@@ -102,11 +113,17 @@ async def start_handler(message: Message, state: FSMContext):
                 for p in packages
             ]
 
+            # Build welcome text for deep link to packages
+            if settings.FREE_IMAGES_COUNT > 0:
+                free_info = f"🎁 Бесплатно: {settings.FREE_IMAGES_COUNT} фото (у вас: {balance['free']})\n"
+            else:
+                free_info = f"💎 <b>Люксери портреты по доступным ценам!</b>\n"
+
             text = (
                 "💎 <b>Добро пожаловать!</b>\n\n"
-                f"🎁 Бесплатно: {settings.FREE_IMAGES_COUNT} фото (у вас: {balance['free']})\n"
+                f"{free_info}"
                 "━━━━━━━━━━━━━━━━━━\n\n"
-                "<b>Доступные пакеты:</b>"
+                "<b>Выберите пакет:</b>"
             )
 
             await message.answer(text, parse_mode="HTML", reply_markup=get_packages_keyboard(packages_list))
@@ -229,13 +246,13 @@ async def balance_handler(message: Message):
     )
 
     if balance['total'] == 0:
-        text += "\n\n💰 У вас закончились попытки. Купите пакет для продолжения!"
+        text += f"\n\n💰 <b>Начните всего за {settings.PACKAGE_1_PRICE}₽!</b>\nПолучите классный портрет люксери-уровня 🎯"
         await message.answer(text, parse_mode="HTML", reply_markup=get_buy_package_keyboard())
     elif balance['total'] <= 3:
         text += "\n\n💡 Рекомендуем пополнить баланс заранее!"
         await message.answer(text, parse_mode="HTML", reply_markup=get_low_balance_keyboard())
     else:
-        text += "\n\n✅ У вас достаточно попыток!"
+        text += "\n\n✅ У вас достаточно фото!"
         await message.answer(text, parse_mode="HTML")
 
 
@@ -256,9 +273,15 @@ async def packages_handler(message: Message):
         for p in packages
     ]
 
+    # Build text with balance info
+    if settings.FREE_IMAGES_COUNT > 0:
+        balance_info = f"🎁 Бесплатно: {settings.FREE_IMAGES_COUNT} фото (осталось: {balance['free']})\n"
+    else:
+        balance_info = f"💎 <b>Студийные портреты по цене чашки кофе!</b>\n"
+
     text = (
         "💎 <b>Доступные пакеты:</b>\n\n"
-        f"🎁 Бесплатно: {settings.FREE_IMAGES_COUNT} фото (осталось: {balance['free']})\n"
+        f"{balance_info}"
         "━━━━━━━━━━━━━━━━━━\n\n"
         "Выберите пакет для покупки:"
     )
@@ -414,9 +437,16 @@ async def show_packages_handler(callback: CallbackQuery):
         {"id": p.id, "name": p.name, "images_count": p.images_count, "price_rub": float(p.price_rub)}
         for p in packages
     ]
+
+    # Build text with balance info
+    if settings.FREE_IMAGES_COUNT > 0:
+        balance_info = f"🎁 Бесплатно: {settings.FREE_IMAGES_COUNT} фото (осталось: {balance['free']})\n"
+    else:
+        balance_info = f"💎 <b>Студийные портреты по цене чашки кофе!</b>\n"
+
     text = (
         "💎 <b>Доступные пакеты:</b>\n\n"
-        f"🎁 Бесплатно: {settings.FREE_IMAGES_COUNT} фото (осталось: {balance['free']})\n"
+        f"{balance_info}"
         "━━━━━━━━━━━━━━━━━━\n\n"
         "Выберите пакет для покупки:"
     )
@@ -439,7 +469,7 @@ async def check_balance_handler(callback: CallbackQuery):
     from aiogram.exceptions import TelegramBadRequest
     try:
         if balance['total'] == 0:
-            text += "\n\n💰 У вас закончились попытки. Купите пакет!"
+            text += f"\n\n💰 <b>Начните всего за {settings.PACKAGE_1_PRICE}₽!</b>\nПолучите классный портрет люксери-уровня 🎯"
             await callback.message.edit_text(text, parse_mode="HTML", reply_markup=get_buy_package_keyboard())
         elif balance['total'] <= 3:
             text += "\n\n💡 Рекомендуем пополнить баланс!"
